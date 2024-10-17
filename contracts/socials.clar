@@ -17,11 +17,23 @@
         content: (string-utf8 280),
         timestamp: uint,
         likes: uint,
-        comments: (list 100 uint)
+        comments: (list 100 uint)  ;; This now stores comment IDs
     })
 
 ;; Counter for post IDs
 (define-data-var post-id-counter uint u0)
+
+;; New: Define the data structure for a comment
+(define-map comments uint 
+    {
+        author: principal,
+        post-id: uint,
+        content: (string-utf8 280),
+        timestamp: uint
+    })
+
+;; New: Counter for comment IDs
+(define-data-var comment-id-counter uint u0)
 
 ;; Function to create a new user profile
 (define-public (create-profile (username (string-utf8 30)) (bio (string-utf8 160)))
@@ -97,4 +109,38 @@
 ;; Function to get post details
 (define-read-only (get-post (post-id uint))
     (map-get? posts post-id)
+)
+
+;; New: Function to add a comment to a post
+(define-public (add-comment (post-id uint) (content (string-utf8 280)))
+    (let (
+        (caller tx-sender)
+        (comment-id (+ (var-get comment-id-counter) u1))
+        (post (unwrap! (map-get? posts post-id) (err u8)))
+    )
+        (map-set comments comment-id {
+            author: caller,
+            post-id: post-id,
+            content: content,
+            timestamp: block-height
+        })
+        (var-set comment-id-counter comment-id)
+        (map-set posts post-id (merge post {
+            comments: (unwrap! (as-max-len? (append (get comments post) comment-id) u100) (err u9))
+        }))
+        (ok comment-id)
+    )
+)
+
+;; New: Function to get comment details
+(define-read-only (get-comment (comment-id uint))
+    (map-get? comments comment-id)
+)
+
+;; Corrected: Function to get all comments for a specific post
+(define-read-only (get-post-comments (post-id uint))
+    (match (map-get? posts post-id)
+        post (ok (map get-comment (get comments post)))
+        (err u10)  ;; Post not found
+    )
 )
