@@ -1,13 +1,13 @@
-# Decentralized Social Media Platform
+# CipherSocial: Decentralized Social Media Platform
 
-This project implements a decentralized social media platform using Clarity smart contracts on the Stacks blockchain. It aims to give users more control over their data and content, potentially reducing issues of censorship and data misuse.
+CipherSocial is a decentralized social media platform implemented using Clarity smart contracts on the Stacks blockchain. It aims to give users more control over their data and content, potentially reducing issues of censorship and data misuse.
 
 ## Features
 
 - User profile creation and management
 - Post creation and retrieval
 - Like functionality for posts
-- User following system
+- User following system (limited to 1000 follows per user)
 - Decentralized data storage on the blockchain
 
 ## Smart Contract Functions
@@ -15,7 +15,7 @@ This project implements a decentralized social media platform using Clarity smar
 1. `create-profile`: Create a new user profile
 2. `create-post`: Create a new post
 3. `like-post`: Like an existing post
-4. `follow-user`: Follow another user
+4. `follow-user`: Follow another user (up to 1000 users)
 5. `get-profile`: Retrieve a user's profile information
 6. `get-post`: Retrieve details of a specific post
 
@@ -33,4 +33,6 @@ Interact with the smart contract using a Stacks wallet or build a frontend appli
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Author
 
+Favour Chiamaka Eze

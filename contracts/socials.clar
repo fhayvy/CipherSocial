@@ -1,15 +1,14 @@
-;;CipherSocial - Decentralized Social Media Platform Smart Contract
+;; CipherSocial: Decentralized Social Media Platform Smart Contract
 
 ;; Define the data structure for a user profile
-(define-data-var user-profiles (map principal
+(define-map user-profiles principal
     {
         username: (string-utf8 30),
         bio: (string-utf8 160),
         posts: (list 100 uint),
         followers: (list 1000 principal),
         following: (list 1000 principal)
-    }) 
-    {})
+    })
 
 ;; Define the data structure for a post
 (define-map posts uint 
@@ -76,11 +75,17 @@
         (caller-profile (unwrap! (map-get? user-profiles caller) (err u3)))
         (follow-profile (unwrap! (map-get? user-profiles user-to-follow) (err u4)))
     )
-        (map-set user-profiles caller (merge caller-profile 
-            {following: (append (get following caller-profile) user-to-follow)}))
-        (map-set user-profiles user-to-follow (merge follow-profile 
-            {followers: (append (get followers follow-profile) caller)}))
-        (ok true)
+        (if (< (len (get following caller-profile)) u1000)
+            (let (
+                (new-following (unwrap! (as-max-len? (append (get following caller-profile) user-to-follow) u1000) (err u6)))
+                (new-followers (unwrap! (as-max-len? (append (get followers follow-profile) caller) u1000) (err u7)))
+            )
+                (map-set user-profiles caller (merge caller-profile {following: new-following}))
+                (map-set user-profiles user-to-follow (merge follow-profile {followers: new-followers}))
+                (ok true)
+            )
+            (err u5) ;; Cannot follow more than 1000 users
+        )
     )
 )
 
@@ -93,4 +98,3 @@
 (define-read-only (get-post (post-id uint))
     (map-get? posts post-id)
 )
-
