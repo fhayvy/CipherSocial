@@ -1,5 +1,11 @@
 ;; CipherSocial: Decentralized Social Media Platform Smart Contract
 
+;; Define the CipherSocial token
+(define-fungible-token ciphersocial-token)
+
+;; Define the contract owner (admin)
+(define-constant contract-owner tx-sender)
+
 ;; Define the data structure for a user profile
 (define-map user-profiles principal
     {
@@ -7,7 +13,9 @@
         bio: (string-utf8 160),
         posts: (list 100 uint),
         followers: (list 1000 principal),
-        following: (list 1000 principal)
+        following: (list 1000 principal),
+        token-balance: uint,
+        is-admin: bool
     })
 
 ;; Define the data structure for a post
@@ -17,7 +25,9 @@
         content: (string-utf8 280),
         timestamp: uint,
         likes: uint,
-        comments: (list 100 uint)
+        comments: (list 100 uint),
+        is-flagged: bool,
+        flags-count: uint
     })
 
 ;; Counter for post IDs
@@ -29,7 +39,9 @@
         author: principal,
         post-id: uint,
         content: (string-utf8 280),
-        timestamp: uint
+        timestamp: uint,
+        is-flagged: bool,
+        flags-count: uint
     })
 
 ;; Counter for comment IDs
@@ -46,7 +58,9 @@
             bio: bio,
             posts: (list),
             followers: (list),
-            following: (list)
+            following: (list),
+            token-balance: u0,
+            is-admin: false
         }))
     )
 )
@@ -64,7 +78,9 @@
             content: content,
             timestamp: block-height,
             likes: u0,
-            comments: (list)
+            comments: (list),
+            is-flagged: false,
+            flags-count: u0
         }))
     )
 )
@@ -120,7 +136,9 @@
                     author: caller,
                     post-id: post-id,
                     content: content,
-                    timestamp: block-height
+                    timestamp: block-height,
+                    is-flagged: false,
+                    flags-count: u0
                 })
                 (let ((new-comments (unwrap! (as-max-len? (append (get comments post) comment-id) u100) (err u9))))
                     (ok (map-set posts post-id (merge post {comments: new-comments})))
@@ -141,5 +159,113 @@
     (match (map-get? posts post-id)
         post (ok (map get-comment (get comments post)))
         (err u10)  ;; Post not found
+    )
+)
+
+;; Function to flag a post
+(define-public (flag-post (post-id uint))
+    (let (
+        (caller tx-sender)
+    )
+        (match (map-get? posts post-id)
+            post (let (
+                (new-flags-count (+ (get flags-count post) u1))
+                (updated-post (merge post {
+                    flags-count: new-flags-count,
+                    is-flagged: (> new-flags-count u5)
+                }))
+            )
+                (ok (map-set posts post-id updated-post))
+            )
+            (err u18) ;; Post not found
+        )
+    )
+)
+
+;; Function to flag a comment
+(define-public (flag-comment (comment-id uint))
+    (let (
+        (caller tx-sender)
+    )
+        (match (map-get? comments comment-id)
+            comment (let (
+                (new-flags-count (+ (get flags-count comment) u1))
+                (updated-comment (merge comment {
+                    flags-count: new-flags-count,
+                    is-flagged: (> new-flags-count u5)
+                }))
+            )
+                (ok (map-set comments comment-id updated-comment))
+            )
+            (err u19) ;; Comment not found
+        )
+    )
+)
+
+;; Function to remove a flagged post (admin only)
+(define-public (remove-flagged-post (post-id uint))
+    (let (
+        (caller tx-sender)
+        (caller-profile (unwrap! (map-get? user-profiles caller) (err u20)))
+    )
+        (asserts! (get is-admin caller-profile) (err u21)) ;; Only admins can remove posts
+        (match (map-get? posts post-id)
+            post (begin
+                (map-delete posts post-id)
+                (ok true)
+            )
+            (err u22) ;; Post not found
+        )
+    )
+)
+
+;; Function to remove a flagged comment (admin only)
+(define-public (remove-flagged-comment (comment-id uint))
+    (let (
+        (caller tx-sender)
+        (caller-profile (unwrap! (map-get? user-profiles caller) (err u23)))
+    )
+        (asserts! (get is-admin caller-profile) (err u24)) ;; Only admins can remove comments
+        (match (map-get? comments comment-id)
+            comment (begin
+                (map-delete comments comment-id)
+                (ok true)
+            )
+            (err u25) ;; Comment not found
+        )
+    )
+)
+
+;; Function to add an admin (only contract owner can add admins)
+(define-public (add-admin (user principal))
+    (let (
+        (caller tx-sender)
+    )
+        (asserts! (is-eq caller contract-owner) (err u26)) ;; Only contract owner can add admins
+        (match (map-get? user-profiles user)
+            profile (ok (map-set user-profiles user (merge profile {is-admin: true})))
+            (err u27) ;; User not found
+        )
+    )
+)
+
+;; Function to remove an admin (only contract owner can remove admins)
+(define-public (remove-admin (user principal))
+    (let (
+        (caller tx-sender)
+    )
+        (asserts! (is-eq caller contract-owner) (err u28)) ;; Only contract owner can remove admins
+        (match (map-get? user-profiles user)
+            profile (ok (map-set user-profiles user (merge profile {is-admin: false})))
+            (err u29) ;; User not found
+        )
+    )
+)
+
+;; Function to check if a user is an admin
+(define-read-only (is-admin (user principal))
+    (match (map-get? user-profiles user)
+        profile (get is-admin profile)
+        false
     )
 )
