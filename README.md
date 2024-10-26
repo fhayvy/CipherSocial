@@ -1,49 +1,49 @@
 # CipherSocial: Decentralized Social Media Platform
 
-CipherSocial is a decentralized social media platform implemented using Clarity smart contracts on the Stacks blockchain. It aims to give users more control over their data and content, potentially reducing issues of censorship and data misuse.
+CipherSocial is a decentralized social media platform implemented with Clarity smart contracts on the Stacks blockchain. CipherSocial aims to provide users with more control over their data and content, while promoting decentralized, censorship-resistant communication.
 
 ## Features
 
-- User profile creation and management
-- Post creation and retrieval
-- Comments on posts
-- Like functionality for posts
-- User following system (limited to 1000 follows per user)
-- Decentralized data storage on the blockchain
-
+- **User Profile Management:** Create and manage user profiles with bio and follower-following relationships.
+- **Content Creation and Interactions:** Users can create posts, comment on them, and like posts.
+- **Follower System:** Follow up to 1000 users, track followers and following.
+- **Decentralized Data Storage:** Stores data on the Stacks blockchain to ensure transparency and data integrity.
+  
 ## Smart Contract Functions
 
 ### User Management
-1. `create-profile`: Create a new user profile
-2. `get-profile`: Retrieve a user's profile information
-3. `follow-user`: Follow another user (up to 1000 users)
+- `create-profile`: Allows users to create their profiles with a unique username and bio.
+- `get-profile`: Retrieve profile information for any user.
+- `follow-user`: Follow another user, with a limit of 1000 followings per user.
 
 ### Post Management
-4. `create-post`: Create a new post
-5. `get-post`: Retrieve details of a specific post
-6. `like-post`: Like an existing post
+- `create-post`: Create a new post up to 280 characters.
+- `get-post`: Retrieve details of a specific post.
+- `like-post`: Like a post, incrementing its like count.
 
 ### Comment Management
-7. `add-comment`: Add a comment to a post
-8. `get-comment`: Retrieve details of a specific comment
-9. `get-post-comments`: Get all comments for a specific post
+- `add-comment`: Add a comment to a post, attaching it to the post's comment list.
+- `get-comment`: Retrieve details of a specific comment.
+- `get-post-comments`: Retrieve all comments associated with a specific post.
 
-## Security Features
+### Moderation and Flagging
+- **Post and Comment Flagging:** Flag posts or comments for moderation. If flagged above a certain threshold, they are automatically marked as flagged.
+- **Admin Controls:** Admins can remove flagged posts and comments. Only the contract owner can assign or remove admin status from other users.
 
-- Input validation to ensure data integrity
-- Error handling for various scenarios
-- Prevention of self-following
-- Limits on the number of follows and comments per post
+## Security and Data Integrity
+
+- **Data Validation:** Ensures inputs meet character limits and follow expected formats.
+- **Error Handling:** Provides specific error codes for common issues, such as unauthorized actions or exceeding limits.
+- **Follower Validation:** Prevents users from following themselves, and limits each user to following up to 1000 users.
+- **Comment Limits:** Limits comments per post to avoid spam.
 
 ## Getting Started
 
-1. Install the [Clarinet](https://github.com/hirosystems/clarinet) development environment for Clarity smart contracts.
-2. Clone this repository and navigate to the project directory.
-3. Use Clarinet to test and deploy the smart contract.
+1. **Install Dependencies:** Ensure [Clarinet](https://github.com/hirosystems/clarinet) is installed for Clarity contract development.
+2. **Clone and Navigate:** Clone this repository and enter the project directory.
+3. **Testing and Deployment:** Use Clarinet to test and deploy the contract on the Stacks blockchain.
 
-## Usage
-
-Interact with the smart contract using a Stacks wallet or build a frontend application that connects to the contract. Here are some example interactions:
+## Example Usage
 
 ```clarity
 ;; Create a profile
@@ -60,23 +60,3 @@ Interact with the smart contract using a Stacks wallet or build a frontend appli
 
 ;; Follow a user
 (contract-call? .ciphersocial follow-user 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request. Here are some areas for potential improvements:
-
-- Implement a reposting/sharing mechanism
-- Add support for media attachments (e.g., image hashes)
-- Create a user reputation or verification system
-- Add privacy settings for user profiles and posts
-
-
-## Author
-
-Favour Chiamaka Eze
-
-## Acknowledgments
-
-- The Stacks community for their support and resources
-- Clarinet developers for providing excellent tools for Clarity development
