@@ -256,7 +256,10 @@
     )
         (asserts! (is-eq caller contract-owner) (err u28)) ;; Only contract owner can remove admins
         (match (map-get? user-profiles user)
-            profile (ok (map-set user-profiles user (merge profile {is-admin: false})))
+            profile (begin
+                (asserts! (get is-admin profile) (err u36)) ;; User is not an admin
+                (ok (map-set user-profiles user (merge profile {is-admin: false})))
+            )
             (err u29) ;; User not found
         )
     )
