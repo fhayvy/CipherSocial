@@ -1,62 +1,128 @@
-# CipherSocial: Decentralized Social Media Platform
+# CipherSocial
 
-CipherSocial is a decentralized social media platform implemented with Clarity smart contracts on the Stacks blockchain. CipherSocial aims to provide users with more control over their data and content, while promoting decentralized, censorship-resistant communication.
+CipherSocial is a decentralized social media platform implemented as a smart contract. It provides core social networking features while maintaining transparency and user control through blockchain technology.
 
 ## Features
 
-- **User Profile Management:** Create and manage user profiles with bio and follower-following relationships.
-- **Content Creation and Interactions:** Users can create posts, comment on them, and like posts.
-- **Follower System:** Follow up to 1000 users, track followers and following.
-- **Decentralized Data Storage:** Stores data on the Stacks blockchain to ensure transparency and data integrity.
-  
+- **User Profiles**
+  - Create and manage user profiles with customizable usernames and bios
+  - Follow/unfollow functionality
+  - Token balance tracking
+  - Admin role support
+
+- **Content Management**
+  - Create and view posts (up to 280 characters)
+  - Comment on posts
+  - Like posts
+  - Content moderation through flagging system
+
+- **Moderation System**
+  - Community-driven content flagging
+  - Automated content flagging threshold (>5 flags)
+  - Admin-controlled content removal
+  - Hierarchical admin management
+
 ## Smart Contract Functions
 
 ### User Management
-- `create-profile`: Allows users to create their profiles with a unique username and bio.
-- `get-profile`: Retrieve profile information for any user.
-- `follow-user`: Follow another user, with a limit of 1000 followings per user.
 
-### Post Management
-- `create-post`: Create a new post up to 280 characters.
-- `get-post`: Retrieve details of a specific post.
-- `like-post`: Like a post, incrementing its like count.
+```clarity
+create-profile (username: string-utf8, bio: string-utf8) → response
+follow-user (user-to-follow: principal) → response
+get-profile (user: principal) → response
+```
 
-### Comment Management
-- `add-comment`: Add a comment to a post, attaching it to the post's comment list.
-- `get-comment`: Retrieve details of a specific comment.
-- `get-post-comments`: Retrieve all comments associated with a specific post.
+### Content Management
 
-### Moderation and Flagging
-- **Post and Comment Flagging:** Flag posts or comments for moderation. If flagged above a certain threshold, they are automatically marked as flagged.
-- **Admin Controls:** Admins can remove flagged posts and comments. Only the contract owner can assign or remove admin status from other users.
+```clarity
+create-post (content: string-utf8) → response
+like-post (post-id: uint) → response
+add-comment (post-id: uint, content: string-utf8) → response
+get-post (post-id: uint) → response
+get-comment (comment-id: uint) → response
+get-post-comments (post-id: uint) → response
+```
 
-## Security and Data Integrity
+### Moderation
 
-- **Data Validation:** Ensures inputs meet character limits and follow expected formats.
-- **Error Handling:** Provides specific error codes for common issues, such as unauthorized actions or exceeding limits.
-- **Follower Validation:** Prevents users from following themselves, and limits each user to following up to 1000 users.
-- **Comment Limits:** Limits comments per post to avoid spam.
+```clarity
+flag-post (post-id: uint) → response
+flag-comment (comment-id: uint) → response
+remove-flagged-post (post-id: uint) → response
+remove-flagged-comment (comment-id: uint) → response
+```
+
+### Administration
+
+```clarity
+add-admin (user: principal) → response
+remove-admin (user: principal) → response
+is-admin (user: principal) → response
+```
+
+## Technical Specifications
+
+- **Post Limitations**
+  - Maximum content length: 280 characters
+  - Maximum comments per post: 100
+  - Automatic flagging at 5+ flags
+
+- **Profile Limitations**
+  - Username max length: 30 characters
+  - Bio max length: 160 characters
+  - Maximum following/followers: 1000 users
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| u1   | Profile already exists |
+| u11  | Username must not be empty |
+| u12  | Content must not be empty |
+| u13  | Post not found |
+| u14  | Can't follow yourself |
+| u15  | Comment content must not be empty |
+| u16  | Post not found for comment |
+| u20-29 | Various admin and moderation errors |
+
+## Security Features
+
+- Contract owner controls admin appointments
+- Only admins can remove flagged content
+- Built-in protection against self-following
+- Automated content flagging system
+- User limits to prevent spam and abuse
+
+## Token System
+
+The platform includes a native fungible token (`ciphersocial-token`) that can be used for future platform features and governance.
 
 ## Getting Started
 
-1. **Install Dependencies:** Ensure [Clarinet](https://github.com/hirosystems/clarinet) is installed for Clarity contract development.
-2. **Clone and Navigate:** Clone this repository and enter the project directory.
-3. **Testing and Deployment:** Use Clarinet to test and deploy the contract on the Stacks blockchain.
+To interact with the CipherSocial platform:
 
-## Example Usage
+1. Deploy the smart contract to your chosen Stacks network
+2. Create a user profile using `create-profile`
+3. Start engaging with content through posts, comments, and likes
+4. Follow other users to build your network
 
-```clarity
-;; Create a profile
-(contract-call? .ciphersocial create-profile "alice" "Blockchain enthusiast")
+## Administration
 
-;; Create a post
-(contract-call? .ciphersocial create-post "Hello, decentralized world!")
+The contract includes a robust administration system:
+- The contract owner is set during deployment
+- Only the contract owner can appoint/remove admins
+- Admins have special privileges for content moderation
+- Admin status can be verified using the `is-admin` function
 
-;; Add a comment to a post
-(contract-call? .ciphersocial add-comment u1 "Great first post!")
+## Future Considerations
 
-;; Like a post
-(contract-call? .ciphersocial like-post u1)
+Potential areas for expansion:
+- Token utility implementation
+- Advanced content moderation features
+- Enhanced profile customization
+- Direct messaging system
+- Content encryption features
 
-;; Follow a user
-(contract-call? .ciphersocial follow-user 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+## Contributing
+
+The smart contract is open for review and improvement suggestions. Please ensure any proposed changes maintain the security and efficiency of the platform.
